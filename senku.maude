@@ -1,0 +1,74 @@
+fmod BOARD is
+
+    pr NAT .
+
+    sorts Cell Board .
+    subsort Cell < Board .
+
+    op [ _ , _ | _] : Nat Nat Bool -> Cell [ctor] .
+
+    op boardEmpty : -> Board [ctor] .
+    op __ : Board Board -> Board [ctor assoc comm] .
+
+    vars X Y : Nat .
+    var B : Board .
+
+    op numToken : Board -> Nat .
+    eq numToken([ X , Y | true] B) = s(numToken(B)) .
+    eq numToken(B) = 0 [owise] .
+
+endfm
+
+mod SENKU is
+
+    pr BOARD .
+    
+    vars X Y : Nat .
+
+    op board : -> Board .
+    eq board =  
+                                            [4 , 0 | true]
+                                    [ 3 , 0 | true]  [3 , 1 | true] 
+                                [2 , 0 | true]  [2 , 1 | false]  [2 , 2 | true]
+                        [1 , 0 | true]  [1 , 1 | true]  [1 , 2 | true] [1 , 3 | true]
+                [0 , 0 | true]  [0 , 1 | true]  [0 , 2 | true] [0 , 3 | true] [0 , 4 | true] .
+
+    op expectedBoard : -> Board .
+    eq expectedBoard =  
+                                            [4 , 0 | false]
+                                    [ 3 , 0 | false]  [3 , 1 | false] 
+                                [2 , 0 | false]  [2 , 1 | true]  [2 , 2 | false]
+                        [1 , 0 | false]  [1 , 1 | false]  [1 , 2 | false] [1 , 3 | false]
+                [0 , 0 | false]  [0 , 1 | false]  [0 , 2 | false] [0 , 3 | false] [0 , 4 | false] .
+
+    rl [horizontal] :
+        [ X , Y | true] [ X , s(Y) | true] [ X, s(s(Y)) | false] =>
+        [ X , Y | false] [ X ,  s(Y)  | false] [ X, s(s(Y)) | true] .
+
+    rl [horizontal-inver] :
+        [ X , Y | false] [ X , s(Y) | true] [ X, s(s(Y)) | true] =>
+        [ X , Y | true] [ X ,  s(Y)  | false] [ X, s(s(Y)) | false] .
+
+    rl [diagonal-asc] :
+        [ X , Y | true ] [ s(X) , Y | true ] [ s(s(X)) , Y | false ] =>
+        [ X , Y | false ] [ s(X) , Y | false ] [ s(s(X)) , Y |  true ] .
+
+    rl [diagonal-desc] :
+        [ X , Y | false ] [ s(X) , Y | true ] [ s(s(X)) , Y | true ] =>
+        [ X , Y | true ] [ s(X) , Y | false ] [ s(s(X)) , Y | false ] .
+
+    rl [diagonal-secondary-asc] :
+        [ X , s(s(Y)) | true ] [ s(X) , s(Y) | true ] [ s(s(X)) , Y | false ] =>
+        [ X , s(s(Y)) | false ] [ s(X) , s(Y) | false ] [ s(s(X)) , Y | true ] .
+    
+    rl [diagonal-secondary-desc] :
+        [ X , s(s(Y)) | false ] [ s(X) , s(Y) | true ] [ s(s(X)) , Y | true ] =>
+        [ X , s(s(Y)) | true ] [ s(X) , s(Y) | false ] [ s(s(X)) , Y | false ] .
+
+endm
+
+red numToken(board) .
+
+search board =>* B:Board s.t. numToken(B:Board) == 1 .
+
+search board =>* B:Board s.t. B:Board == expectedBoard .
